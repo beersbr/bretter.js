@@ -39,6 +39,17 @@ var AnimationEasingFunctions = (function(){
 }());
 
 
+function Promise() {
+	this.done = function(fn){ this.resolve = fn; };
+	this.resolve = function(){};
+
+	this.error = function(fn){ this.failed = fn; };
+	this.failed = function(){};
+
+	this.progress = function(fn){ this.updateProgress = fn; };
+	this.updateProgress = function(){};
+}
+
 function getType(o){
     if(o===null)return "[object Null]"; // special case
     return Object.prototype.toString.call(o);
