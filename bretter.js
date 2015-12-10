@@ -450,11 +450,110 @@ function SATCollision(polygonA, polygonB)
 	return collision;
 }
 
+function getOffsetLeft( elem )
+{
+	var offsetLeft = 0;
+	do {
+		if(!isNaN(elem.offsetLeft))
+		{
+			offsetLeft += elem.offsetLeft;
+		}
+	} while(elem = elem.offsetParent);
+	return offsetLeft;
+}
+
+function getOffsetTop( elem )
+{
+	var offsetTop = 0;
+	do {
+		if(!isNaN(elem.offsetTop))
+		{
+			offsetTop += elem.offsetTop;
+		}
+	} while(elem = elem.offsetParent);
+	return offsetTop;
+}
+
 
 /************************************************************************
 OPENGL HELPERS
 ************************************************************************/
 
-function CreateTexture() {
+function CreateTexture(tag, image_object, gl_mag_filter, gl_min_filter) {
+	if(engineResources[tag]) {
+		logger.error("The resource being set already exists!");
+		return;
+	}
 
+	gl.activeTexture(gl.TEXTURE0);
+
+	engineResources[tag] = { type: "opengl-texture", tag: tag };
+	engineResources[tag].item = texture = gl.createTexture();
+
+	texture.image = image_object;
+	texture.width = image_object.width;
+	texture.height = image_object.height;
+
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+	// gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, engineResources[tag].item.image);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl_mag_filter);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl_min_filter);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+
+	return engineResources[tag];
 }
+
+function CreateShaderProgram(tag, vertex_source, fragment_source, attributes, uniforms) {
+	if(engineResources[tag]) {
+		logger.error("The resource being set already exists as", engineResources[tag].type );
+		return;
+	}
+
+	engineResources[tag] = { type: "opengl-shader", tag: tag };
+	engineResources[tag].item = shaderProgram = gl.createProgram();
+
+	var vertex_id = gl.createShader(gl.VERTEX_SHADER);
+	gl.shaderSource(vertex_id, vertex_source);
+	gl.compileShader(vertex_id);
+
+	if(!gl.getShaderParameter(vertex_id, gl.COMPILE_STATUS)) {
+		logger.error("There was an error compiling the vertex shader: \n", gl.getShaderInfoLog(vertex_id));
+	}
+
+	var fragment_id = gl.createShader(gl.FRAGMENT_SHADER);
+	gl.shaderSource(fragment_id, fragment_source);
+	gl.compileShader(fragment_id);
+
+	if(!gl.getShaderParameter(fragment_id, gl.COMPILE_STATUS)) {
+		logger.error("There was an error compiling the fragment shader: \n", gl.getShaderInfoLog(fragment_id));
+	}
+
+	gl.attachShader(engineResources[tag].item, vertex_id);
+	gl.attachShader(engineResources[tag].item, fragment_id);
+	gl.linkProgram(engineResources[tag].item);
+
+	if(!gl.getProgramParameter(engineResources[tag].item, gl.LINK_STATUS)) {
+		logger.error("Could not link shader programs:\n", vertex_source.substr(0, 50)+"...\n\n", fragment_source.substr(0, 50)+"...");
+	}
+
+	gl.useProgram(engineResources[tag].item);
+
+	engineResources[tag].uniforms = {};
+	engineResources[tag].attributes = {};
+
+	for(var attr_index in attributes) {
+		engineResources[tag].attributes[attributes[parseInt(attr_index)]] = gl.getAttribLocation(engineResources[tag].item, attributes[parseInt(attr_index)]);
+		gl.enableVertexAttribArray(engineResources[tag].attributes[attributes[parseInt(attr_index)]]);
+	}
+
+	for(var uni_index in uniforms) {
+		engineResources[tag].uniforms[uniforms[parseInt(uni_index)]] = gl.getUniformLocation(engineResources[tag].item, uniforms[parseInt(uni_index)]);
+	}
+
+	return true;
+}
+
