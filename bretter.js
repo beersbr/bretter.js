@@ -128,6 +128,8 @@ function KeyboardHandler()
 
 }
 
+var KEYBOARD = new KeyboardHandler();
+
 var AnimationEasingFunctions = (function(){
 	/**
 	 * Easing functions to be used by the animation engine
@@ -382,7 +384,10 @@ Vector2.length = function(A) {
 
 Vector2.unit = function(A) {
 	var l = Vector2.length(A);
-	return [A.x/l, A.y/l];
+	if(l != 0)
+		return [A.x/l, A.y/l];
+	else
+		return [0, 0];
 }
 
 Vector2.projection = function(A, B) {
@@ -495,6 +500,30 @@ Matrix4.scale = function(m, v3) {
 	return d;
 }
 
+Matrix4.translate = function(m, v3) {
+	var x = v3[0], y = v3[1], z = v3[2],
+        a00, a01, a02, a03,
+        a10, a11, a12, a13,
+        a20, a21, a22, a23;
+
+     var d = [];
+
+    a00 = m[0]; a01 = m[1]; a02 = m[2]; a03 = m[3];
+    a10 = m[4]; a11 = m[5]; a12 = m[6]; a13 = m[7];
+    a20 = m[8]; a21 = m[9]; a22 = m[10]; a23 = m[11];
+
+    d[0] = a00; d[1] = a01; d[2] = a02; d[3] = a03;
+    d[4] = a10; d[5] = a11; d[6] = a12; d[7] = a13;
+    d[8] = a20; d[9] = a21; d[10] = a22; d[11] = a23;
+
+    d[12] = a00 * x + a10 * y + a20 * z + m[12];
+    d[13] = a01 * x + a11 * y + a21 * z + m[13];
+    d[14] = a02 * x + a12 * y + a22 * z + m[14];
+    d[15] = a03 * x + a13 * y + a23 * z + m[15];
+
+
+    return d;
+}
 
 
 function ProjectPolygonOnAxis2D(polygon, axis)
@@ -657,7 +686,7 @@ function getOffsetTop( elem )
 OPENGL HELPERS
 ************************************************************************/
 
-function CreateTexture(image_object, gl_mag_filter, gl_min_filter) {
+function CreateTexture(image_object, gl_mag_filter, gl_min_filter, flip) {
 
 	gl.activeTexture(gl.TEXTURE0);
 
@@ -669,7 +698,7 @@ function CreateTexture(image_object, gl_mag_filter, gl_min_filter) {
 
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
-	// gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, !!flip);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image_object);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl_mag_filter);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl_min_filter);
