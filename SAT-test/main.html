@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="../bretter.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript">
+	function initialize_opengl() {
+
+	}
+
+	window.onload = function(ev) {
+		var canvas = document.getElementById("canvas");
+		var context = canvas.getContext("webgl");
+
+		$(canvas).on("click", function(){
+			console.log("CLICK")
+		})
+	}
+
+</script>
+<title>Sat</title>
+</head>
+<body>
+<canvas id="canvas" width="800px" height="600px"></canvas>
+<script type="text/shader-fs"></script>
+<script type="text/shader-vs"></script>
+</body>
+</html>
