@@ -1,3 +1,68 @@
+var AnimationEasingFunctions = (function(){
+	/**
+	 * Easing functions to be used by the animation engine
+	 * @param  {Number} t Current Time in animation
+	 * @param  {Number} b Start value
+	 * @param  {Number} c Change in value
+	 * @param  {Number} d Duration of animation
+	 * @return {Number}  returns the new position
+	 */
+	function Linear(t, b, c, d) {
+		return c*t/d + b;
+	};
+
+	function EaseInOutCubic(t, b, c, d) {
+		t /= d/2;
+		if (t < 1) return c/2*t*t*t + b;
+		t -= 2;
+		return c/2*(t*t*t + 2) + b;
+	};
+
+	function EaseInCubic(t, b, c, d) {
+		t /= d;
+		return c*t*t*t + b;
+	};
+
+	function EaseOutCubic(t, b, c, d) {
+		t /= d;
+		t--;
+		return c*(t*t*t + 1) + b;
+	};
+
+	return {
+		linear: Linear,
+		easeInOutCubic: EaseInOutCubic,
+		easeInCubic: EaseInCubic,
+		easeOutCubic: EaseOutCubic
+	};
+
+}());
+
+
+function getType(o){
+    if(o===null)return "[object Null]"; // special case
+    return Object.prototype.toString.call(o);
+}
+
+Object.clone = function(o) {
+	var result = {};
+
+	for(var k in o) {
+		switch(getType(o))
+		{
+			case '[object Array]':
+				result[k] = o[k].slice();
+				break;
+			default:
+				result[k] = o[k];
+		}
+	}
+
+	return result;
+};
+
+
+// REFERENCE: http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
 requestAnimFrame = (function() {
 	return window.requestAnimationFrame ||
 		window.webkitRequestAnimationFrame ||
@@ -8,6 +73,10 @@ requestAnimFrame = (function() {
 			window.setTimeout(callback, 1000/60);
 		};
 })();
+
+String.prototype.strip = function(){
+	return this.replace(/^\s+/g, '').replace(/\s+$/g, '');	
+}
 
 Object.defineProperty(Array.prototype, "last", {
 	get: function(){
@@ -237,6 +306,32 @@ Vector3.unit = function(A) {
 // 	return Vector3.dot(A, B) / Vector3.length(B);
 // }
 
+
+var Matrix4 = {};
+Matrix4.create = function() {
+	return ([1, 0, 0, 0,
+			 0, 1, 0, 0,
+			 0, 0, 1, 0,
+			 0, 0, 0, 1]);
+}
+
+Matrix4.ortho = function(left, right, bottom, top, near, far) {
+	return ([2/(right-left), 0, 0, 0,
+		 0, 2/(top-bottom), 0, 0,
+		 0, 0, -(2/(far-near)), 0,
+		 -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1]);
+}
+
+Matrix4.perspective = function(fovy, aspect, near, far) {
+	var t = 1.0/Math.tan(fovy/2.0);
+	var r = 1.0/(near-far);
+	return ([t/aspect, 0, 0, 0,
+			 0, t, 0, 0,
+			 0, 0, (far+near)*r, 1,
+			 0, 0, (2.0*far*near)*r, 0]);
+}
+
+
 function ProjectPolygonOnAxis2D(polygon, axis)
 {
 
@@ -353,4 +448,13 @@ function SATCollision(polygonA, polygonB)
 
 	// collision[0] = Vector2.unit(collision[0]);
 	return collision;
+}
+
+
+/************************************************************************
+OPENGL HELPERS
+************************************************************************/
+
+function CreateTexture() {
+
 }
