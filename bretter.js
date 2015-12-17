@@ -365,6 +365,10 @@ Vector2.divide = function(A, B) {
 	return [A.x / B.x, A.y / B.y];
 }
 
+Vector2.areEqual = function(A, B) {
+	return (A.x == B.x && A.y == B.y);
+}
+
 Vector2.scale = function(A, S) {
 	return [A.x * S, A.y * S];
 }
@@ -525,6 +529,9 @@ Matrix4.translate = function(m, v3) {
     return d;
 }
 
+Matrix4.rotate = function(m, v3) {
+
+}
 
 function ProjectPolygonOnAxis2D(polygon, axis)
 {
